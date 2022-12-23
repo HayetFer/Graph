@@ -1,9 +1,13 @@
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.Properties;
+import java.util.Queue;
 import java.util.Set;
 
 public class Graph {
@@ -51,14 +55,14 @@ public class Graph {
     }
   }
 
-  /*
-   * public void nettoie(){
-   * 
-   * Predicate<Arc> condition = s->s.getFin()==null || s.getFin()!=null;
-   * relie.removeIf(condition);
-   * 
-   * }
-   */
+  
+     public void nettoie(){
+     
+     Predicate<Arc> condition = s->s.getFin()==null || s.getFin()!=null;
+     relie.removeIf(condition);
+     
+     }
+    
 
   public void clean() {
     for (int i = relie.size() - 1; i >= 0; i--) {
@@ -83,7 +87,7 @@ public class Graph {
 
         }
         // System.out.println(relie.get(i).getDebut() + "i = " + i + " j = " + j + "
-        // size = " + relie.size());*/
+        // size = " + relie.size()); /
         // System.out.println(relie.get(1).getFin() + "" + relie.get(3).getFin());
       }
     }
@@ -188,81 +192,108 @@ public class Graph {
     return cpt;
   }
 
-  /*
-   * public List<Sommet> PathFinding(Sommet s1, Sommet s2) {
-   * List<Sommet> path = new ArrayList<>();
-   * 
-   * if (s1 == s2) {
-   * return null;
-   * }
-   * 
-   * 
-   * path.add(s1);
-   * for (int i = 0; i < nbrSommet(); i++) {
-   * if(s2)
-   * }
-   * 
-   * return path;
-   * }
-   */
+  public List<Sommet> SommetsListe(){
+    List<Sommet> beg = relie.stream().map(p -> p.getDebut()).collect(Collectors.toList());
+    List<Sommet> fin = relie.stream().map(p -> p.getFin()).collect(Collectors.toList());
 
-  /*
-   * public List<Sommet> PathFinding(Sommet s1, Sommet s2) {
-   * // Create a queue to store the vertices to visit
-   * Queue<Sommet> queue = new LinkedList<>();
-   * // Create a map to store the paths from s1 to each vertex
-   * Map<Sommet, Sommet> paths = new HashMap<>();
-   * 
-   * // Add the starting vertex to the queue and the paths map
-   * queue.add(s1);
-   * paths.put(s1, null);
-   * 
-   * // While there are vertices in the queue
-   * while (!queue.isEmpty()) {
-   * // Take the next vertex from the queue
-   * Sommet vertex = queue.poll();
-   * 
-   * // If the vertex is the ending vertex, return the path
-   * if (vertex == s2) {
-   * return constructPath(paths, s2);
-   * }
-   * 
-   * // Get the adjacent vertices of the current vertex
-   * List<Sommet> adjacents = adjacentsDebut(vertex);
-   * 
-   * // Add each adjacent vertex to the queue and the paths map
-   * for (Sommet adjacent : adjacents) {
-   * if (!paths.containsKey(adjacent)) {
-   * queue.add(adjacent);
-   * paths.put(adjacent, vertex);
-   * }
-   * }
-   * }
-   * 
-   * // If the queue is empty and no path was found, return null
-   * return null;
-   * }
-   * 
-   * private List<Sommet> constructPath(Map<Sommet, Sommet> paths, Sommet s2) {
-   * // Create a list to store the path
-   * List<Sommet> path = new ArrayList<>();
-   * 
-   * // Start at the ending vertex and work backwards
-   * Sommet vertex = s2;
-   * while (vertex != null) {
-   * // Add the current vertex to the front of the list
-   * path.add(0, vertex);
-   * // Look up the predecessor of the current vertex in the paths map
-   * vertex = paths.get(vertex);
-   * }
-   * 
-   * return path;
-   * }
-   */
+    beg.addAll(fin);
+    List<Sommet> noDuplicates = beg.stream()
+                                .distinct()
+                                .collect(Collectors.toList());
 
-  public Sommet suivant(int i) {
-    return relie.get(i).getDebut();
+    return noDuplicates;
   }
+
+  
+  public List<Sommet> PathFinding(Sommet s1, Sommet s2) {
+     LinkedList<Sommet> queue = new LinkedList<>();
+     List<Sommet> visite = new ArrayList<>();
+     Map<Sommet, Sommet> predecessorMap = new HashMap<>();
+     if(s1==s2){
+      visite.add(s1);
+      return visite;
+     }
+     predecessorMap.put(s1, null); 
+     
+
+     queue.add(s1);
+
+     int i = 0;
+     while(!queue.isEmpty()){
+        
+        Sommet vertex = queue.poll();
+        
+       
+        visite.add(vertex);
+        if (vertex==s2)
+            return constructPath(predecessorMap, s2);
+       
+
+        List<Sommet> adj = adjacentsDebut(vertex );
+        
+        //System.out.println("!!!!!!------- \n list adj " + adj  );
+        for (Sommet j : adj) {
+          if (!predecessorMap.containsKey(j)) {
+              predecessorMap.put(j, vertex);
+              queue.add(j);
+             
+          }
+      }
+        
+        i++;
+     }
+
+
+
+
+     return visite;
+
+
+     }
+
+
+  private List<Sommet> constructPath(Map<Sommet, Sommet> paths, Sommet s2) {
+       // Create a list to store the path
+       List<Sommet> path = new ArrayList<>();
+       
+       // Start at the ending vertex and work backwards
+      Sommet vertex = s2;
+       while (vertex != null) {
+       // Add the current vertex to the front of the list
+       path.add(0, vertex);
+       // Look up the predecessor of the current vertex in the paths map
+      vertex = paths.get(vertex);
+    
+      }
+      
+      return path;
+     }
+      
+
+  public boolean isConnexe(){
+
+    for(Sommet i : SommetsListe()){
+     // System.out.println(i);
+      for(Sommet j : SommetsListe()){
+        //System.out.println("-------" + PathFinding(j, i));
+        if(PathFinding(j, i).contains(null)){
+          
+          return false;
+        }
+      }
+    }
+
+
+    return true;
+  }
+
+  public boolean containsCycle(Sommet s1){
+
+
+
+    return true;
+  } 
+
 
   public static void main(String[] args) {
     Sommet p1 = new Sommet(50);
@@ -270,14 +301,16 @@ public class Graph {
     Sommet s3 = new Sommet(13);
     Sommet s5 = new Sommet(17);
     Sommet s6 = new Sommet(16);
+    Sommet s7 = new Sommet(19);
+    Sommet s8 = new Sommet(1);
     Graph t = new Graph(p1);
     Graph tCopie = new Graph(s2);
     tCopie.ajouteElement(s3, s2, 2);
-    t.ajouteElement(s2);
+    t.ajouteElement(s8);
     // t.ajouteElement(s3, s2, 1);
-    Arc s4 = new Arc(p1, s2);
-    tCopie.ajouteArc(s4);
-    t.ajouteArc(s4);
+   // Arc s4 = new Arc(p1, s2);
+    //tCopie.ajouteArc(s4);
+    //t.ajouteArc(s4);
     // t.ajouteElement(s2, s3, 2);
     t.ajouteElement(s3, s2, 2);
     // t.ajouteElement(s3, s6, 1);
@@ -285,18 +318,21 @@ public class Graph {
     t.ajouteElement(s5, s2, 2);
     // tCopie.ajouteElement(s6);
     t.ajouteElement(s6, p1, 2);
+    t.ajouteElement(s6,s7,1);
+    t.ajouteElement(s7,s3,1);
     // t.ajouteBoucle(s2);
-    /*
-     * System.out.print("-------------------- \n");
-     * System.out.println(t);
-     */
+    
+       System.out.print("-------------------- \n");
+       //System.out.println(t);
+      
     t.clean();
 
     tCopie.clean();
     System.out.print(t);
     System.out.print("-------------------- \n");
     // t.foundPath(s6, s6);
-    System.out.print(t.PathFinding(s3, s5));
+    System.out.print(t.PathFinding(s8, s2));
+    System.out.print(t.isConnexe());
     // System.out.print(t.longueurChemin(50, 16));
     // System.out.println(tCopie.isSousGraph(t));
   }
