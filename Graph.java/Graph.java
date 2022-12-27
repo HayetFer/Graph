@@ -20,7 +20,7 @@ public class Graph {
   public Sommet som;
 
   Graph() {
-    relie = null;
+    relie = new ArrayList<>();
     som = null;
   }
 
@@ -160,7 +160,12 @@ public class Graph {
         adjacents.add(relie.get(i).getFin());
       }
     }
-
+    for (int i = 0; i < adjacents.size(); i++) {
+      if (adjacents.get(i) == null) {
+        adjacents.remove(i);
+        i--;
+      }
+    }
     return adjacents;
   }
 
@@ -334,17 +339,41 @@ public class Graph {
     for (Sommet i : SommetSorted) {
       triSommet.put(i, noColor);
     }
-   
-    //algortihm
-    int k = 1;
-    for(Sommet i : SommetSorted){
-      if(triSommet.get(i)==0){
-        if(
-          for(Sommet j : )
-        )
-      }
-    }
 
+    // algortihm
+
+    int k = 1;
+    int n = 0;
+    while (n <= SommetSorted.size()) {
+      for (Sommet i : SommetSorted) {
+        if (triSommet.get(i) == 0) {
+          for (Sommet j : adjacentsDebut(i)) {
+
+            if (triSommet.get(j) != k) {
+              triSommet.put(i, k);
+              System.out.println(triSommet + " " + " n " + n + " i " + i + " " + " j : " + j);
+              n += 1;
+            }
+          }
+        }
+      }
+      k += 1;
+    }
+    /*
+     * for (Sommet i : SommetSorted) {
+     * if (triSommet.get(i) == 0) {
+     * for (Sommet j : adjacentsDebut(i)) {
+     * if (triSommet.get(j) != k) {
+     * triSommet.put(i, k);
+     * 
+     * }
+     * }
+     * }
+     * k += 1;
+     * }
+     */
+
+    System.out.println(triSommet);
   }
 
   class DegComp implements Comparator<Sommet> {
@@ -357,50 +386,32 @@ public class Graph {
     }
 
     public static void main(String[] args) {
-      Sommet p1 = new Sommet(50);
-      Sommet s2 = new Sommet(12);
-      Sommet s3 = new Sommet(13);
-      Sommet s5 = new Sommet(17);
-      Sommet s6 = new Sommet(16);
-      Sommet s7 = new Sommet(19);
-      Sommet s8 = new Sommet(1);
-      Graph t = new Graph(p1);
-      Graph tCopie = new Graph(s2);
-      tCopie.ajouteElement(s3, s2, 2);
-      t.ajouteElement(s8);
-      // t.ajouteElement(s3, s2, 1);
-      // Arc s4 = new Arc(p1, s2);
-      // tCopie.ajouteArc(s4);
-      // t.ajouteArc(s4);
-      // t.ajouteElement(s2, s3, 2);
-      t.ajouteElement(s3, s2, 2);
-      // t.ajouteElement(s3, s6, 1);
-      // t.ajouteElement(s5);
-      t.ajouteElement(s5, s2, 2);
-      // tCopie.ajouteElement(s6);
-      t.ajouteElement(s6, p1, 2);
-      // t.ajouteElement(s5, p1, 2);
-      t.ajouteElement(s6, s7, 1);
-      t.ajouteElement(s7, s3, 1);
-      // t.ajouteBoucle(s2);
-      t.ajouteBoucle(s3);
-      System.out.print("-------------------- \n");
-      // System.out.println(t);
+
+      Sommet s1 = new Sommet(1);
+      Sommet s2 = new Sommet(2);
+      Sommet s3 = new Sommet(3);
+      Sommet s4 = new Sommet(4);
+
+      Graph t = new Graph(s1);
+
+      t.ajouteElement(s1, s2, 2);
+      t.ajouteElement(s2, s3, 2);
+      t.ajouteElement(s3, s4, 2);
+      t.ajouteElement(s4, s1, 2);
 
       t.clean();
 
-      tCopie.clean();
       System.out.print("Graph : \n" + t);
       System.out.print("\n-------------------- \n");
       // t.foundPath(s6, s6);
-      System.out.print("Chemin entre " + p1 + " et " + s5 + "\n \n " + t.PathFinding(p1, s5));
+      System.out.print("Chemin entre " + s1 + " et " + s4 + "\n \n " + t.PathFinding(s1, s4));
       System.out.print("\n-------------------- \n");
       System.out.print("Graph est cyclique ? " + t.containsCycle());
       System.out.print("\n-------------------- \n");
       System.out.print("Combien de degrés pour? " + " " + s3 + " " + t.degreSommet(s3));
       System.out.print("\n-------------------- \n");
       for (Sommet i : t.SommetsListe()) {
-        System.out.print("Degrés " + i + " " + t.degreSommet(i) + "\n");
+        System.out.print("Degrés " + i + " " + t.adjacentsDebut(i) + "\n");
       }
       System.out.print("\n-------------------- \n");
       t.WelshandPowell();
