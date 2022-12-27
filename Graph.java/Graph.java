@@ -1,5 +1,9 @@
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -55,14 +59,12 @@ public class Graph {
     }
   }
 
-  
-     public void nettoie(){
-     
-     Predicate<Arc> condition = s->s.getFin()==null || s.getFin()!=null;
-     relie.removeIf(condition);
-     
-     }
-    
+  public void nettoie() {
+
+    Predicate<Arc> condition = s -> s.getFin() == null || s.getFin() != null;
+    relie.removeIf(condition);
+
+  }
 
   public void clean() {
     for (int i = relie.size() - 1; i >= 0; i--) {
@@ -122,39 +124,23 @@ public class Graph {
     return true;
   }
 
-  public int degreSommet(int pos, boolean debut) {
+  public int degreSommet(Sommet s1) {
     int compteur = 0;
-    if (debut) {
-      for (int i = relie.size() - 1; i >= 0; i--) {
-        if (relie.get(i).getDebut() == relie.get(pos).getDebut() && relie.get(pos).getFin() != null
-            && relie.get(i).getFin() != null) {
-          compteur++;
-        }
-        if (relie.get(pos).getDebut() == relie.get(i).getFin() && relie.get(pos).getFin() != null
-            && relie.get(i).getFin() != null) {
-
-          compteur++;
-        }
+    for (int i = 0; i < relie.size(); i++) {
+      if ((relie.get(i).getDebut() == s1 && relie.get(i).getFin() != null || relie.get(i).getFin() == s1)
+          && (relie.get(i).getDebut() != relie.get(i).getFin())) {
+        compteur++;
       }
-    } else {
-      for (int i = relie.size() - 1; i >= 0; i--) {
-        if (relie.get(i).getFin() == relie.get(pos).getFin() && relie.get(pos).getFin() != null
-            && relie.get(i).getFin() != null) {
-          compteur++;
-
-        }
-        if (relie.get(i).getDebut() == relie.get(pos).getFin() && relie.get(pos).getFin() != null
-            && relie.get(i).getFin() != null) {
-          compteur++;
-
-        }
+      if ((relie.get(i).getDebut() == s1 && relie.get(i).getFin() == s1)) {
+        compteur += 2;
       }
     }
+
     return compteur;
   }
 
-  public boolean isIsole(int pos, boolean debut) {
-    return degreSommet(pos, debut) == 0;
+  public boolean isIsole(Sommet s1) {
+    return degreSommet(s1) == 0;
   }
 
   public boolean isSousGraph(Graph g) {
@@ -192,148 +178,232 @@ public class Graph {
     return cpt;
   }
 
-  public List<Sommet> SommetsListe(){
+  public List<Sommet> SommetsListe() {
     List<Sommet> beg = relie.stream().map(p -> p.getDebut()).collect(Collectors.toList());
     List<Sommet> fin = relie.stream().map(p -> p.getFin()).collect(Collectors.toList());
 
     beg.addAll(fin);
     List<Sommet> noDuplicates = beg.stream()
-                                .distinct()
-                                .collect(Collectors.toList());
+        .distinct()
+        .collect(Collectors.toList());
+
+    for (int i = 0; i < noDuplicates.size(); i++) {
+      if (noDuplicates.get(i) == null) {
+        noDuplicates.remove(i);
+        i--;
+      }
+    }
 
     return noDuplicates;
   }
 
-  
   public List<Sommet> PathFinding(Sommet s1, Sommet s2) {
-     LinkedList<Sommet> queue = new LinkedList<>();
-     List<Sommet> visite = new ArrayList<>();
-     Map<Sommet, Sommet> predecessorMap = new HashMap<>();
-     if(s1==s2){
+    LinkedList<Sommet> queue = new LinkedList<>();
+    List<Sommet> visite = new ArrayList<>();
+    Map<Sommet, Sommet> predecessorMap = new HashMap<>();
+    if (s1 == s2) {
       visite.add(s1);
       return visite;
-     }
-     predecessorMap.put(s1, null); 
-     
+    }
+    predecessorMap.put(s1, null);
 
-     queue.add(s1);
+    queue.add(s1);
 
-     int i = 0;
-     while(!queue.isEmpty()){
-        
-        Sommet vertex = queue.poll();
-        
-       
-        visite.add(vertex);
-        if (vertex==s2)
-            return constructPath(predecessorMap, s2);
-       
+    int i = 0;
+    while (!queue.isEmpty()) {
 
-        List<Sommet> adj = adjacentsDebut(vertex );
-        
-        //System.out.println("!!!!!!------- \n list adj " + adj  );
-        for (Sommet j : adj) {
-          if (!predecessorMap.containsKey(j)) {
-              predecessorMap.put(j, vertex);
-              queue.add(j);
-             
-          }
+      Sommet vertex = queue.poll();
+
+      visite.add(vertex);
+      if (vertex == s2)
+        return constructPath(predecessorMap, s2);
+
+      List<Sommet> adj = adjacentsDebut(vertex);
+
+      // System.out.println("!!!!!!------- \n list adj " + adj );
+      for (Sommet j : adj) {
+        if (!predecessorMap.containsKey(j)) {
+          predecessorMap.put(j, vertex);
+          queue.add(j);
+
+        }
       }
-        
-        i++;
-     }
 
+      i++;
+    }
 
+    return visite;
 
-
-     return visite;
-
-
-     }
-
+  }
 
   private List<Sommet> constructPath(Map<Sommet, Sommet> paths, Sommet s2) {
-       // Create a list to store the path
-       List<Sommet> path = new ArrayList<>();
-       
-       // Start at the ending vertex and work backwards
-      Sommet vertex = s2;
-       while (vertex != null) {
-       // Add the current vertex to the front of the list
-       path.add(0, vertex);
-       // Look up the predecessor of the current vertex in the paths map
+    // Create a list to store the path
+    List<Sommet> path = new ArrayList<>();
+
+    // Start at the ending vertex and work backwards
+    Sommet vertex = s2;
+    while (vertex != null) {
+      // Add the current vertex to the front of the list
+      path.add(0, vertex);
+      // Look up the predecessor of the current vertex in the paths map
       vertex = paths.get(vertex);
-    
-      }
-      
-      return path;
-     }
-      
 
-  public boolean isConnexe(){
+    }
 
-    for(Sommet i : SommetsListe()){
-     // System.out.println(i);
-      for(Sommet j : SommetsListe()){
-        //System.out.println("-------" + PathFinding(j, i));
-        if(PathFinding(j, i).contains(null)){
-          
+    return path;
+  }
+
+  public boolean isConnexe() {
+
+    for (Sommet i : SommetsListe()) {
+      // System.out.println(i);
+      for (Sommet j : SommetsListe()) {
+        // System.out.println("-------" + PathFinding(j, i));
+        if (PathFinding(j, i).contains(null)) {
+
           return false;
         }
       }
     }
 
-
     return true;
   }
 
-  public boolean containsCycle(Sommet s1){
+  public boolean containsCycle() {
+    // Handle empty and single-vertex graphs
+    if (relie == null || relie.size() <= 1) {
+      return false;
+    }
 
+    // Initialize the visited set
+    Set<Sommet> visited = new HashSet<>();
 
+    // Iterate through all the arcs in the graph and perform DFS on each unvisited
+    // vertex
+    for (Arc arc : relie) {
+      Sommet vertex = arc.getDebut();
+      if (!visited.contains(vertex) && DFS(vertex, visited)) {
+        return true;
+      }
+    }
 
-    return true;
-  } 
+    return false;
+  }
 
+  public boolean DFS(Sommet s1, Set<Sommet> visited) {
+    // Mark the current vertex as visited
+    visited.add(s1);
 
-  public static void main(String[] args) {
-    Sommet p1 = new Sommet(50);
-    Sommet s2 = new Sommet(12);
-    Sommet s3 = new Sommet(13);
-    Sommet s5 = new Sommet(17);
-    Sommet s6 = new Sommet(16);
-    Sommet s7 = new Sommet(19);
-    Sommet s8 = new Sommet(1);
-    Graph t = new Graph(p1);
-    Graph tCopie = new Graph(s2);
-    tCopie.ajouteElement(s3, s2, 2);
-    t.ajouteElement(s8);
-    // t.ajouteElement(s3, s2, 1);
-   // Arc s4 = new Arc(p1, s2);
-    //tCopie.ajouteArc(s4);
-    //t.ajouteArc(s4);
-    // t.ajouteElement(s2, s3, 2);
-    t.ajouteElement(s3, s2, 2);
-    // t.ajouteElement(s3, s6, 1);
-    // t.ajouteElement(s5);
-    t.ajouteElement(s5, s2, 2);
-    // tCopie.ajouteElement(s6);
-    t.ajouteElement(s6, p1, 2);
-    t.ajouteElement(s6,s7,1);
-    t.ajouteElement(s7,s3,1);
-    // t.ajouteBoucle(s2);
-    
-       System.out.print("-------------------- \n");
-       //System.out.println(t);
-      
-    t.clean();
+    // Perform DFS on all adjacent vertices
+    for (Arc arc : relie) {
+      Sommet vertex = arc.getDebut();
+      if (vertex.equals(s1)) {
+        Sommet adjVertex = arc.getFin();
+        if (adjVertex == null) {
+          continue;
+        }
+        if (visited.contains(adjVertex)) {
+          // If an adjacent vertex is already marked as visited, then there is a cycle
+          return true;
+        }
+        if (DFS(adjVertex, visited)) {
+          return true;
+        }
+      }
+    }
 
-    tCopie.clean();
-    System.out.print(t);
-    System.out.print("-------------------- \n");
-    // t.foundPath(s6, s6);
-    System.out.print(t.PathFinding(s8, s2));
-    System.out.print(t.isConnexe());
-    // System.out.print(t.longueurChemin(50, 16));
-    // System.out.println(tCopie.isSousGraph(t));
+    return false;
+  }
+
+  public void WelshandPowell() {
+    // Colors
+    int noColor = 0;
+    int rouge = 1;
+    int bleu = 2;
+    int vert = 3;
+    int jaune = 4;
+
+    // Sort the vertices by degre
+    List<Sommet> SommetSorted = new ArrayList<>();
+    for (Sommet i : SommetsListe()) {
+      SommetSorted.add(i);
+    }
+    Collections.sort(SommetSorted, new DegComp());
+
+    HashMap<Sommet, Integer> triSommet = new HashMap<>();
+    for (Sommet i : SommetSorted) {
+      triSommet.put(i, noColor);
+    }
+   
+    //algortihm
+    int k = 1;
+    for(Sommet i : SommetSorted){
+      if(triSommet.get(i)==0){
+        if(
+          for(Sommet j : )
+        )
+      }
+    }
+
+  }
+
+  class DegComp implements Comparator<Sommet> {
+    public int compare(Sommet s1, Sommet s2) {
+      if (degreSommet(s1) > (degreSommet(s2))) {
+        return 1;
+      } else {
+        return -1;
+      }
+    }
+
+    public static void main(String[] args) {
+      Sommet p1 = new Sommet(50);
+      Sommet s2 = new Sommet(12);
+      Sommet s3 = new Sommet(13);
+      Sommet s5 = new Sommet(17);
+      Sommet s6 = new Sommet(16);
+      Sommet s7 = new Sommet(19);
+      Sommet s8 = new Sommet(1);
+      Graph t = new Graph(p1);
+      Graph tCopie = new Graph(s2);
+      tCopie.ajouteElement(s3, s2, 2);
+      t.ajouteElement(s8);
+      // t.ajouteElement(s3, s2, 1);
+      // Arc s4 = new Arc(p1, s2);
+      // tCopie.ajouteArc(s4);
+      // t.ajouteArc(s4);
+      // t.ajouteElement(s2, s3, 2);
+      t.ajouteElement(s3, s2, 2);
+      // t.ajouteElement(s3, s6, 1);
+      // t.ajouteElement(s5);
+      t.ajouteElement(s5, s2, 2);
+      // tCopie.ajouteElement(s6);
+      t.ajouteElement(s6, p1, 2);
+      // t.ajouteElement(s5, p1, 2);
+      t.ajouteElement(s6, s7, 1);
+      t.ajouteElement(s7, s3, 1);
+      // t.ajouteBoucle(s2);
+      t.ajouteBoucle(s3);
+      System.out.print("-------------------- \n");
+      // System.out.println(t);
+
+      t.clean();
+
+      tCopie.clean();
+      System.out.print("Graph : \n" + t);
+      System.out.print("\n-------------------- \n");
+      // t.foundPath(s6, s6);
+      System.out.print("Chemin entre " + p1 + " et " + s5 + "\n \n " + t.PathFinding(p1, s5));
+      System.out.print("\n-------------------- \n");
+      System.out.print("Graph est cyclique ? " + t.containsCycle());
+      System.out.print("\n-------------------- \n");
+      System.out.print("Combien de degrés pour? " + " " + s3 + " " + t.degreSommet(s3));
+      System.out.print("\n-------------------- \n");
+      for (Sommet i : t.SommetsListe()) {
+        System.out.print("Degrés " + i + " " + t.degreSommet(i) + "\n");
+      }
+      System.out.print("\n-------------------- \n");
+      t.WelshandPowell();
+    }
   }
 }
