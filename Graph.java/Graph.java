@@ -14,6 +14,11 @@ import java.util.Properties;
 import java.util.Queue;
 import java.util.Set;
 
+//TO DO BETER :
+//WELSH AND POWELL
+//HAS CYCLE
+//DELETE NULL WITH EULER AND PLANAIRE
+
 public class Graph {
 
   public List<Arc> relie;
@@ -105,21 +110,24 @@ public class Graph {
   }
 
   public boolean isSimple() {
-    for (int i = relie.size() - 1; i >= 0; i--) {
-      if (relie.get(i).getDebut() == relie.get(i).getFin()) {
-        return false;
-      }
-      for (int j = i - 1; j >= 0; j--) {
-        if (relie.get(j).getDebut() == relie.get(i).getDebut() ||
-            relie.get(j).getDebut() == relie.get(i).getFin()) {
-          if ((relie.get(j).getDebut() != null &&
-              (relie.get(j).getFin() != null) &&
-              (relie.get(i).getDebut() != null &&
-                  (relie.get(i).getFin() != null)))) {
-            return false;
-          }
+    for (int i = 0; i < relie.size(); i++) {
+      for (int j = i + 1; j < relie.size(); j++) {
+        if (relie.get(i).getDebut() == relie.get(i).getFin()) {
+          // System.out.println(" here " + relie.get(i).toString());
+
+          return false;
+
+        }
+        if (relie.get(i) == relie.get(j)) {
+          // System.out.println(" la " + relie.get(i).toString());
+          return false;
+
+        }
+        if (relie.get(i).getDebut() == relie.get(j).getFin() && relie.get(j).getDebut() == relie.get(i).getFin()) {
+          return false;
         }
       }
+
     }
     return true;
   }
@@ -320,6 +328,35 @@ public class Graph {
     return false;
   }
 
+  public boolean isPlannaire() {
+    int n = (3 * SommetsListe().size()) - 6;
+    int m = relie.size();
+
+    if (!isSimple()) {
+      return false;
+    }
+
+    if (!isConnexe()) {
+      return false;
+    }
+
+    if (m <= n) {
+      return true;
+    }
+    return false;
+  }
+
+  public Object EulerForula() {
+
+    int face = 0;
+    if (isConnexe() && isPlannaire()) {
+      face = relie.size() - SommetsListe().size() + 2;
+      return face;
+    }
+
+    return "NON PLANAIRE ET/OU CONNEXE";
+  }
+
   public void WelshandPowell() {
     // Colors
     int noColor = 0;
@@ -394,9 +431,9 @@ public class Graph {
 
       Graph t = new Graph(s1);
 
-      t.ajouteElement(s1, s2, 2);
-      t.ajouteElement(s2, s3, 2);
-      t.ajouteElement(s3, s4, 2);
+      t.ajouteElement(s1, s2, 1);
+      t.ajouteElement(s2, s3, 1);
+      t.ajouteElement(s3, s4, 1);
       t.ajouteElement(s4, s1, 2);
 
       t.clean();
@@ -413,8 +450,12 @@ public class Graph {
       for (Sommet i : t.SommetsListe()) {
         System.out.print("Degrés " + i + " " + t.adjacentsDebut(i) + "\n");
       }
-      System.out.print("\n-------------------- \n");
-      t.WelshandPowell();
+      System.out.print("\n-------------------- Graph couleur \n");
+      // t.WelshandPowell();
+      System.out.print("\nGraph est simple ? \n");
+      System.out.println(t.isSimple());
+      System.out.print("\nGraph est planaire ? \n");
+      System.out.println(t.isPlannaire());
     }
   }
 }
